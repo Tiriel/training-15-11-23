@@ -24,6 +24,18 @@ class OmdbToMovieMapper implements OmdbMapperInterface
         ) {
             throw new \InvalidArgumentException();
         }
-        // TODO: Implement mapValue() method.
+
+        $date = $value['Released'] === 'N/A' ? '01-01-'.$value['Year'] : $value['Released'];
+
+        return (new Movie())
+            ->setTitle($value['Title'])
+            ->setPlot($value['Plot'])
+            ->setCountry($value['Country'])
+            ->setReleasedAt(new \DateTimeImmutable($date))
+            ->setPoster($value['Poster'])
+            ->setPrice(5.0)
+            ->setRated($value['Rated'])
+            ->setImdbId($value['imdbID'])
+        ;
     }
 }

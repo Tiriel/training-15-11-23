@@ -7,6 +7,8 @@ use App\Entity\User;
 use App\Form\MovieType;
 use App\Movie\Search\Consumer\OmdbApiConsumer;
 use App\Movie\Search\Enum\SearchType;
+use App\Movie\Search\Mapper\OmdbToGenreMapper;
+use App\Movie\Search\Mapper\OmdbToMovieMapper;
 use App\Movie\Search\Provider\MovieProvider;
 use App\Repository\MovieRepository;
 use App\Security\Voter\MovieVoter;
@@ -43,11 +45,17 @@ class MovieController extends AbstractController
     }
 
     #[Route('/omdb/{title}', name: 'app_movie_omdb')]
-    public function omdb(string $title, OmdbApiConsumer $consumer): Response
+    public function omdb(string $title, OmdbApiConsumer $consumer, OmdbToMovieMapper $movieMapper, OmdbToGenreMapper $genreMapper): Response
     {
-        dd($consumer->fetch(SearchType::Title, $title));
+        $data = $consumer->fetch(SearchType::Title, $title);
+        $movie = $movieMapper->mapValue($data);
+        foreach (explode(', ', $data['Genre']) as $name) {
+            $movie->addGenre($genreMapper->mapValue($name));
+        }
 
-        return $this->render('movie/show.html.twig', ['movie' => []]);
+        return $this->render('movie/show.html.twig', [
+            'movie' => $movie
+        ]);
     }
 
     #[Route('/new', name: 'app_movie_new', methods: ['GET', 'POST'])]
