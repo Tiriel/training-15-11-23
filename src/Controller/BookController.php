@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Book\BookManager;
 use App\Entity\Book;
 use App\Entity\User;
 use App\Form\BookType;
@@ -63,9 +64,9 @@ class BookController extends AbstractController
     }
 
     #[Route('/{title}', name: 'app_book_title', methods: ['GET'])]
-    public function title(BookRepository $repository, ?string $title = null): Response
+    public function title(BookManager $manager, ?string $title = null): Response
     {
-        $book = $repository->findOneBy(['title' => $title]);
+        $book = $manager->getOneByTitle($title);
 
         return $this->redirectToRoute('app_book_show', [
             'id' => $book->getId(),
