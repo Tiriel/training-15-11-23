@@ -3,21 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\Movie;
-use App\Entity\User;
 use App\Form\MovieType;
-use App\Movie\Search\Consumer\OmdbApiConsumer;
-use App\Movie\Search\Enum\SearchType;
-use App\Movie\Search\Mapper\OmdbToGenreMapper;
-use App\Movie\Search\Mapper\OmdbToMovieMapper;
 use App\Movie\Search\Provider\MovieProvider;
 use App\Repository\MovieRepository;
-use App\Security\Voter\MovieVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/movie')]
@@ -45,13 +38,9 @@ class MovieController extends AbstractController
     }
 
     #[Route('/omdb/{title}', name: 'app_movie_omdb')]
-    public function omdb(string $title, OmdbApiConsumer $consumer, OmdbToMovieMapper $movieMapper, OmdbToGenreMapper $genreMapper): Response
+    public function omdb(string $title, MovieProvider $provider): Response
     {
-        $data = $consumer->fetch(SearchType::Title, $title);
-        $movie = $movieMapper->mapValue($data);
-        foreach (explode(', ', $data['Genre']) as $name) {
-            $movie->addGenre($genreMapper->mapValue($name));
-        }
+        $movie = $provider->getOne($title);
 
         return $this->render('movie/show.html.twig', [
             'movie' => $movie
