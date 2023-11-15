@@ -42,6 +42,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $lastConnectedAt = null;
 
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $preferredChannel = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -143,6 +146,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setLastConnectedAt(?\DateTimeImmutable $lastConnectedAt): static
     {
         $this->lastConnectedAt = $lastConnectedAt;
+
+        return $this;
+    }
+
+    public function getPreferredChannel(): ?string
+    {
+        return $this->preferredChannel;
+    }
+
+    public function setPreferredChannel(?string $preferredChannel): static
+    {
+        $this->preferredChannel = $preferredChannel;
 
         return $this;
     }
