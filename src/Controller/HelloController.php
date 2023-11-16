@@ -12,7 +12,9 @@ class HelloController extends AbstractController
     #[Route('/hello/{name?World}', name: 'app_hello_index', requirements: ['name' => '(?:\pL|[- ])+'])]
     public function index(string $name, #[Autowire(param: 'app.sf_version')] string $sfVersion): Response
     {
-        dump($sfVersion);
+        if ($this->isGranted('ROLE_ADMIN')) {
+            dump($sfVersion);
+        }
 
         return $this->render('hello/index.html.twig', [
             'controller_name' => $name,

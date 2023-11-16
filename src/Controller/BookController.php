@@ -7,6 +7,7 @@ use App\Entity\Book;
 use App\Entity\User;
 use App\Form\BookType;
 use App\Repository\BookRepository;
+use App\Security\Voter\BookVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -34,10 +35,12 @@ class BookController extends AbstractController
 
     #[Route('/{!id<\d+>?1}', name: 'app_book_show', methods: ['GET'])]
     // #[Route('/{id<\d+>?1}', name: 'app_book_show', requirements: ['id' => '\d+'], defaults: ['id' => 1])]
-    public function show(int $id = 1): JsonResponse
+    public function show(?Book $book): JsonResponse
     {
+        $this->denyAccessUnlessGranted(BookVoter::SHOW, $book);
+
         return $this->json([
-            'message' => 'Welcome to your new controller! id : '.$id,
+            'message' => 'Welcome to your new controller! id : '.$book->getId(),
             'path' => 'src/Controller/BookController.php',
         ]);
     }
@@ -45,6 +48,8 @@ class BookController extends AbstractController
     #[Route('/new', name: 'app_book_new', methods: ['GET'])]
     public function new(Request $request, EntityManagerInterface $manager): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_BOOK_WRITER');
+
         $book = new Book();
         $form = $this->createForm(BookType::class, $book);
 
