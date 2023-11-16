@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Form\MovieType;
 use App\Movie\Search\Provider\MovieProvider;
 use App\Repository\MovieRepository;
+use App\Security\Voter\MovieVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,7 +27,7 @@ class MovieController extends AbstractController
         ]);
     }
 
-    #[IsGranted('movie.underage', 'movie')]
+    #[IsGranted(MovieVoter::UNDERAGE, 'movie')]
     #[Route('/{id<\d+>}', name: 'app_movie_show', methods: ['GET'])]
     public function show(?Movie $movie, ValidatorInterface $validator): Response
     {
@@ -44,7 +45,7 @@ class MovieController extends AbstractController
     public function omdb(string $title, MovieProvider $provider): Response
     {
         $movie = $provider->getOne($title);
-        $this->denyAccessUnlessGranted('movie.underage', $movie);
+        $this->denyAccessUnlessGranted(MovieVoter::UNDERAGE, $movie);
 
         return $this->render('movie/show.html.twig', [
             'movie' => $movie
@@ -56,7 +57,7 @@ class MovieController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager, ?Movie $movie = null): Response
     {
         if ($movie instanceof Movie) {
-            $this->denyAccessUnlessGranted('movie.edit', $movie);
+            $this->denyAccessUnlessGranted(MovieVoter::EDIT, $movie);
         }
 
         $movie ??= new Movie();
@@ -64,7 +65,7 @@ class MovieController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if (($user = $this->getUser()) instanceof User) {
+            if (!$movie->getId() && ($user = $this->getUser()) instanceof User) {
                 $movie->setCreatedBy($user);
             }
             $entityManager->persist($movie);

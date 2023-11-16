@@ -24,10 +24,6 @@ class BookVoter extends Voter
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
         $user = $token->getUser();
-        if (\in_array('ROLE_ADMIN', $token->getRoleNames())) {
-            return true;
-        }
-
         if (!$user instanceof User) {
             return false;
         }
